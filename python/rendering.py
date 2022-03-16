@@ -2,6 +2,7 @@ import os, re, sys
 from constants import *
 from file_io import copy_component, listdir_recursive, match_component_tags, match_references, read_json, write_component
 from functions import *
+from live_scripts import *
 
 def has_been_rendered(component_tag):
     return os.path.exists("./.BUILD/components/" + component_tag[0] + ".html")
@@ -12,56 +13,42 @@ def references_rendered(component_tags):
             return False
     return True
 
+def expand_repeater(tag, GLOBAL):
+    params = tag[1]
+    output = ""
+    component_name = params["component"]
+    array = params["array"]
+    for item in array:
+        new_tag = component_name
+        for key in item.keys():
+            new_tag = new_tag + " " + key + "="
+            if type(item[key]) == str:
+                new_tag = new_tag + "\"" + item[key] + "\""
+            else:
+                new_tag = new_tag + str(item[key])
+        output = output + expand_comp_tag(new_tag, GLOBAL)
+    return output
+
 def expand_comp_tag(tag, GLOBAL):
 
     tag = parse_tag(tag, False)
 
-    output = copy_component("./components/" + tag[0] + ".html")
-
-    tag_tree = TagTree(output)
-
-    output = tag_tree.perform_substitutions(tag[1], GLOBAL)
-
-    output = re.sub("\n", "", output)
+    if tag[0] == "Repeater":
+        output = expand_repeater(tag, GLOBAL)
+    else:
+        output = copy_component("./components/" + tag[0] + ".html")
+        tag_tree = TagTree(output)
+        output = tag_tree.perform_substitutions(tag[1], GLOBAL)
+        #output = clean_html_text(output)
 
     return output
-
-def render_component_old(comp_obj, root_tag, GLOBAL):
-
-    config_var_references = match_references(comp_obj, "#")
-
-    if root_tag != None:
-        comp_obj = substitute_param_tags(comp_obj, root_tag, GLOBAL)
-
-    comp_obj = substitute_hash_references(comp_obj, config_var_references, GLOBAL)
-
-    eval_tags = match_references(comp_obj, "$", "(")
-
-    comp_obj = substitute_eval_tags(comp_obj, eval_tags, GLOBAL)
-
-    component_tags = match_component_tags(comp_obj)
-
-    if len(component_tags) > 0:
-        comp_obj = substitute_component_references(comp_obj, component_tags, GLOBAL)
-
-    return comp_obj
-
-def substitute_component_references(comp_obj, component_tags, GLOBAL):
-    for tag in component_tags:
-        sub = copy_component("./components/" + tag[0] + ".html")
-
-        sub = render_component(sub, tag, GLOBAL)
-        # DANGER (.*?) We should be looking for the exact tag (so that includes looking at params)
-        comp_obj = re.sub("<%" + tag[0] + ".*?" + ">", sub, comp_obj, 1)
-        comp_obj = re.sub("\n\n", "\n", comp_obj)
-    return comp_obj
 
 def substitute_eval_tags(comp_obj, eval_tags, GLOBAL):
     for tag in eval_tags:
         try:
             substitution = eval(tag)
         except:
-            print_error_message("cannot evaluate $(" + str(tag) + ")")
+            throw_error("invalid tag", "cannot evaluate $(" + str(tag) + ")")
             sys.exit(1)
         comp_obj = re.sub("\$\(" + regex_cleanse(tag) + "\)", str(substitution), comp_obj)
         comp_obj = re.sub("\n\n", "\n", comp_obj)
@@ -108,8 +95,6 @@ def produce_files(directory, specs, GLOBAL):
 def fill_template(template, directory, key, content, GLOBAL):
     comp_obj = copy_component(template)
 
-    #comp_obj = render_component(comp_obj, ["TEMPLATE", content["params"]], GLOBAL)
-
     tag_tree = TagTree(comp_obj)
 
     comp_obj = tag_tree.perform_substitutions(content["params"], GLOBAL)
@@ -146,8 +131,6 @@ class TagTree:
     
     def __init__(self, text, kind = "MASTER"):
         self.tags = []
-        self.opening_brackets = "{(<"
-        self.closing_brackets = "})>"
         self.kind = kind
         self.process(text)
 
@@ -177,7 +160,7 @@ class TagTree:
                     string = string + char
 
             elif first_bracket:
-                if char in self.opening_brackets:
+                if char in OPENING_BRACKETS:
                     bracket_depth += 1
                     first_bracket = False
                     if char == "{":
@@ -199,10 +182,10 @@ class TagTree:
                     in_tag, first_bracket, bracket_depth = False, False, 0
 
             else:
-                if char in self.opening_brackets:
+                if char in OPENING_BRACKETS:
                     bracket_depth += 1
                     string = string + char
-                elif char in self.closing_brackets:
+                elif char in CLOSING_BRACKETS:
                     bracket_depth -= 1
                     if bracket_depth == 0:
                         in_tag = False
@@ -245,7 +228,10 @@ class TagTree:
         if self.kind == "VAR":
             output = str(params[text])
         elif self.kind == "EVAL":
-            output = str(eval(text))
+            try:
+                output = str(eval(text))
+            except:
+                throw_error("eval error", "cannot evaluate $(" + text + ")")
         elif self.kind == "COMP":
             output = expand_comp_tag(text, GLOBAL)
         elif self.kind == "HASH":

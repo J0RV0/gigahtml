@@ -1,7 +1,21 @@
-import re
+import re, sys
+from constants import CLOSING_BRACKETS, DEV_MODE, OPENING_BRACKETS
+
+def is_letter(char):
+    return 65 <= ord(char) <= 90 or 97 <= ord(char) <= 122
+
+def is_digit(char):
+    return 48 <= ord(char) <= 57
+
+def is_whitespace(char):
+    return char in [" ", "\t"]
+
+def is_string_delimiter(char):
+    return char in ["\"", "'"]
 
 def parse_tag(tag, remove_brackets = True):
 
+    original_tag = tag
 
     # extract name of components (remove the #{ })
     if remove_brackets:
@@ -16,55 +30,76 @@ def parse_tag(tag, remove_brackets = True):
         index += 1
 
     d = {}
-    state = "start-name"
+    q = "start-name"
     name = ""
     value = ""
+    bracket_depth = 0
+    escape = False
     for char in tag[index:]:
 
-        if state == "start-name":
-            if char == " ":
-                pass
-            else:
-                name = name + char
-                state = "name"
+        if q == "start-name":
+            if is_letter(char):
+                name = char
+                q = "name"
+            elif not is_whitespace(char):
+                print("parse_tag 1")
+                throw_error("invalid tag", original_tag)
 
-        elif state == "name":
+        elif q == "name":
+            if is_letter(char) or char == "-":
+                name = name + char
+            elif is_whitespace(char):
+                q = "equals"
+            elif char == "=":
+                q = "start-value"
+            else:
+                print("parse_tag 2")
+                throw_error("invalid tag", original_tag)
+
+        elif q == "equals":
             if char == "=":
-                state = "start-value"
-            else:
-                name = name + char
+                q = "start-value"
 
-        elif state == "start-value":
-            if char == " ":
-                pass
-            elif char in ["\"", "'"]:
-                state = "string-value"
-                value = value + char
-            else:
-                state = "value"
-                value = value + char
+        elif q == "start-value":
+            if is_string_delimiter(char):
+                q = "value-string"
+                value = char
+            elif is_digit(char):
+                q = "value-number"
+                value = char
+            elif char in "{[":
+                q = "value-object"
+                value = char
+                bracket_depth = 1
+            elif not is_whitespace(char):
+                print("parse_tag 3")
+                throw_error("invalid tag", original_tag)
 
-        elif state == "string-value":
+        elif q == "value-string":
             value = value + char
-            if char in ["\"", "'"]:
-                state = "end-value"
+            if is_string_delimiter(char):
                 d[name] = eval(value)
-                name = ""
-                value = ""
+                name, value = "", ""
+                q = "start-name"
 
-        elif state == "value":
-            if char == " ":
-                state = "end-value"
-                d[name] = eval(value)
-                name = ""
-                value = ""
-            else:
+        elif q == "value-number":
+            if is_digit(char) or char == ".":
                 value = value + char
+            else:
+                d[name] = eval(value)
+                name, value = "", ""
+                q = "start-name"
 
-        elif state == "end-value":
-            if char != " ":
-                state = "name"
-                name = name + char
+        elif q == "value-object":
+            value = value + char
+            if char in "}]":
+                bracket_depth -= 1
+                if bracket_depth == 0:
+                    d[name] = eval(value)
+                    name, value = "", ""
+                    q = "start-name"
+            elif char in "{[":
+                 bracket_depth += 1
 
     if value != "":
         d[name] = eval(value)
@@ -91,8 +126,9 @@ def remove_repeats(array):
             values.append(array[index])
             index += 1
 
-def print_error_message(message):
-    print("\033[1;31merror: " + message + "\033[0m")
+def throw_error(error_type, message):
+    print("\033[1;31merror: " + error_type + ": " + message + "\033[0m")
+    sys.exit(1)
 
 def regex_cleanse(text):
     output = ""
@@ -102,3 +138,10 @@ def regex_cleanse(text):
         else:
             output = output + char
     return output
+
+def clean_html_text(text):
+    text = re.sub("\n", "", text)
+    if DEV_MODE:
+        text = re.sub("  ", "", text)
+        text = re.sub("><", ">\n<", text)
+    return text

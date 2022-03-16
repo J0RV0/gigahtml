@@ -1,3 +1,10 @@
+DEV_MODE = True
+
+GIGAHTML_DIR = "/home/jack/Development/GigaHTML"
+
+OPENING_BRACKETS = "{(<"
+CLOSING_BRACKETS = "})>"
+
 COLOUR_PINK = "\033[1;35m"
 COLOUR_CYAN = "\033[1;36m"
 COLOUR_NONE = "\033[0m"
