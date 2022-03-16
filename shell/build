@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# remove previous build
+[ ! -z "$(ls -A BUILD)" ] && rm -r BUILD/*
+
+python3 ${GIGAHTML}/python/build.py
+

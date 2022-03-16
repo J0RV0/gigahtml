@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm -f -r BUILD/*
+rm -f -r .BUILD/*

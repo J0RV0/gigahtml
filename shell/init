@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cat ${GIGAHTML}/res/ascii-logo.txt
+python3 ${GIGAHTML}/python/init.py

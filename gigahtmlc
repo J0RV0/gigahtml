@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ "$1" == "build" ]; then
+    echo -e "\e[1;35mGigaHTML: Building project...\e[0m"
+    ${GIGAHTML}/shell/delete_build
+    ${GIGAHTML}/shell/build
+    echo -e "\e[1;35mGigaHTML: Project built\e[0m"
+
+elif [ $1 == "delete-build" ]; then
+    ${GIGAHTML}/shell/delete_build
+
+fi

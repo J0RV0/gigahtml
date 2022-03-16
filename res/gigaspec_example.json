@@ -1,0 +1,8 @@
+{
+    "browse/movie-posters/": [
+        {
+            "source": "res/movie-posters.json",
+            "template": "templates/sales-page.html"
+        }
+    ]
+}
