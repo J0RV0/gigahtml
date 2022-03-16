@@ -4,15 +4,6 @@ from file_io import copy_component, listdir_recursive, match_component_tags, mat
 from functions import *
 from live_scripts import *
 
-def has_been_rendered(component_tag):
-    return os.path.exists("./.BUILD/components/" + component_tag[0] + ".html")
-
-def references_rendered(component_tags):
-    for tag in component_tags:
-        if not has_been_rendered(tag):
-            return False
-    return True
-
 def expand_repeater(tag, GLOBAL):
     params = tag[1]
     output = ""
