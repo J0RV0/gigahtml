@@ -39,35 +39,8 @@ def expand_comp_tag(tag, GLOBAL):
         output = copy_component("./components/" + tag[0] + ".html")
         tag_tree = TagTree(output)
         output = tag_tree.perform_substitutions(tag[1], GLOBAL)
-        #output = clean_html_text(output)
 
     return output
-
-def substitute_eval_tags(comp_obj, eval_tags, GLOBAL):
-    for tag in eval_tags:
-        try:
-            substitution = eval(tag)
-        except:
-            throw_error("invalid tag", "cannot evaluate $(" + str(tag) + ")")
-            sys.exit(1)
-        comp_obj = re.sub("\$\(" + regex_cleanse(tag) + "\)", str(substitution), comp_obj)
-        comp_obj = re.sub("\n\n", "\n", comp_obj)
-    return comp_obj
-
-def substitute_param_tags(comp_obj, root_tag, GLOBAL):
-    params = root_tag[1]
-    for param in params:
-        substitution = params[param]
-        comp_obj = re.sub("\${" + regex_cleanse(param) + "}", str(substitution), comp_obj)
-        comp_obj = re.sub("\n\n", "\n", comp_obj)
-    return comp_obj
-
-def substitute_hash_references(comp_obj, references, GLOBAL):
-    for reference in references:
-        substitution = GLOBAL["config_vars"][reference]
-        comp_obj = re.sub("#{" + reference + "}", substitution, comp_obj)
-        comp_obj = re.sub("\n\n", "\n", comp_obj)
-    return comp_obj
 
 def render_pages(GLOBAL):
 

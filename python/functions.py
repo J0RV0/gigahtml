@@ -109,12 +109,6 @@ def parse_tag(tag, remove_brackets = True):
     return output
 
 
-def remove_match(match, array):
-    for i in range(len(array)):
-        if array[i] == match:
-            del array[i]
-            return
-
 def remove_repeats(array):
     removed_count = 0
     values = []
@@ -129,19 +123,3 @@ def remove_repeats(array):
 def throw_error(error_type, message):
     print("\033[1;31merror: " + error_type + ": " + message + "\033[0m")
     sys.exit(1)
-
-def regex_cleanse(text):
-    output = ""
-    for char in text:
-        if char in "+*":
-            output = output + "\\" + char
-        else:
-            output = output + char
-    return output
-
-def clean_html_text(text):
-    text = re.sub("\n", "", text)
-    if DEV_MODE:
-        text = re.sub("  ", "", text)
-        text = re.sub("><", ">\n<", text)
-    return text
