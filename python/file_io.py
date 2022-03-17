@@ -1,45 +1,6 @@
 import json, os, re
 from functions import parse_tag, remove_repeats
 
-def match_component_tags(comp_obj):
-
-    # list all component tags in comp_obj
-    raw_tags = re.findall("<%.*?>", comp_obj)
-
-    # create tag objects from tag text
-    component_tags = []
-    for tag in raw_tags:
-        tag = parse_tag(tag)
-        component_tags.append(tag)
-
-    return component_tags
-
-def match_references(comp_obj, symbol, parenthesis = "{"):
-    if symbol == "$":
-        symbol = "\$"
-
-    if parenthesis == "{":
-        opening = "{"
-        closing = "}"
-    elif parenthesis == "(":
-        opening = "\("
-        closing = "\)"
-
-    references = re.findall(symbol + opening + ".*?" + closing, comp_obj)
-    remove_repeats(references)
-    for index in range(len(references)):
-        references[index] = references[index][2:-1]
-    return references
-
-def OKJFQJLKEWFLEWQGmatch_references_old(comp_obj, symbol):
-    if symbol == "$":
-        symbol = "\$"
-    references = os.popen("cat " +  path + " | grep -P -o '" + symbol + "{.*?}' | sed 's/" + symbol + "{//' | sed 's/}//'").read()
-    references = references.split("\n")
-    remove_repeats(references)
-    del references[-1]
-    return references
-
 def copy_component(path):
     file = open(path, "r")
     output = file.read()

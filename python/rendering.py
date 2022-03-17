@@ -1,6 +1,6 @@
 import os, re, sys
 from constants import *
-from file_io import copy_component, listdir_recursive, match_component_tags, match_references, read_json, write_component
+from file_io import copy_component, listdir_recursive, read_json, write_component
 from functions import *
 from live_scripts import *
 

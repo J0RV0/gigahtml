@@ -162,3 +162,5 @@ function removeRepeats(array) {
         }
     }
 }
+
+module.exports = { parseTag, removeRepeats, throwError };

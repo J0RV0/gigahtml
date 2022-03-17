@@ -1,12 +1,14 @@
 #!/bin/bash
 
 if [ "$1" == "run" ]; then
-    python3 ${GIGAHTML}/python/run_package_script.py $2
+    node ${GIGAHTML}/js/run-package-script.js $(pwd) $2
 
 elif [[ "$1" == "build" || "$1" == "delete-build"  ]]; then
-    python3 ${GIGAHTML}/python/run_package_script.py $1
+    node ${GIGAHTML}/js/run-package-script.js $(pwd) $1
 
 elif [ "$1" == "init" ]; then
     ${GIGAHTML}/shell/init
 
 fi
+
+> ${GIGAHTML}/js/runtime-values.js

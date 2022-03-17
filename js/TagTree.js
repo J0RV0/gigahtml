@@ -129,44 +129,6 @@ class TagTree {
         }
     }
 
-    performSubstitutions(params, GLOBAL) {
-
-        var text = "";
-        var index = 0;
-        this.tags.forEach(value => {
-            if (value.constructor.name === "TagTree") {
-                text = text + value.performSubstitutions(params, GLOBAL);
-            }
-            else if (value.constructor.name === "Array") {
-                text = text + "[" + value.toString() + "]";
-            }
-            else {
-                text = text + value.toString();
-            }
-        });
-
-        if (this.kind == "VAR") {
-            output = str(params[text]);
-        }
-        else if (this.kind === "EVAL") {
-            // TODO: error catch
-            output = str(eval(text));
-        }
-        else if (this.kind === "COMP") {
-            output = expandCompTag(text, GLOBAL);
-        }
-        else if (this.kind === "HASH") {
-            output = str(GLOBAL["config_vars"][text]);
-        }
-        else if (this.kind === "MASTER") {
-            output = text;
-        }
-
-        return output;
-    }
-
 }
 
-const tagTree = new TagTree("<h1>Well who is it?<%profile name='Jack' age=21></h1>");
-
-tagTree.print();
+module.exports = TagTree;

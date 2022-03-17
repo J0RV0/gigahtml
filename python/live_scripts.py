@@ -1,3 +1,4 @@
 def embed_text():
-    file = open()
-    return "EMBEDDED"
+    return "This is a live script"
+
+print(embed_text())

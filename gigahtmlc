@@ -3,7 +3,6 @@
 if [ "$1" == "build" ]; then
     echo -e "\e[1;35mGigaHTML: Building project...\e[0m"
     ${GIGAHTML}/shell/delete_build
-    cat live-scripts/*.py > ${GIGAHTML}/python/live_scripts.py
     ${GIGAHTML}/shell/build
     echo -e "\e[1;35mGigaHTML: Project built\e[0m"
 
